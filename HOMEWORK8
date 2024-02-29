@@ -1,0 +1,48 @@
+import sqlite3
+
+
+connection = sqlite3.connect('hw8.db')
+cursor = connection.cursor()
+
+
+def display_cities():
+    cursor.execute('SELECT id, title FROM cities',)
+    cities = cursor.fetchall()
+
+    print(
+        "Вы можете отобразить список учеников по выбранному id города "
+        "из перечня городов ниже, для выхода из программы введите 0:")
+    for city in cities:
+        print(f"{city[0]}. {city[1]}")
+
+
+def display_students(city_id):
+    cursor.execute("""
+        SELECT students.first_name, students.city_id, cities.title, countries.title, cities.area
+        FROM students
+        JOIN cities ON students.city_id = cities.id
+        JOIN countries ON cities.country_id = countries.id
+        WHERE students.city_id = ?
+    """, (city_id,))
+
+    students_info = cursor.fetchall()
+
+    for student_info in students_info:
+        print(
+            f"Имя: {student_info[0]}, Город: {student_info[2]}, "
+            f"Страна: {student_info[3]}, Площадь города: {student_info[4]}")
+
+
+while True:
+    display_cities()
+    selected_city_id = int(input("Введите id города (для выхода введите 0): "))
+
+    if selected_city_id == 0:
+        break
+
+    try:
+        display_students(selected_city_id)
+    except sqlite3.Error:
+        print("Произошла ошибка. Пожалуйста, проверьте введенный id города.")
+
+connection.close()
